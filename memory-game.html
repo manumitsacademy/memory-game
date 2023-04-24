@@ -1,0 +1,248 @@
+<html>
+	<head>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+		<title></title>
+		<style>
+			body{
+				background-color: #264653;
+				padding: 0 25px;
+			}
+			.tile{
+				border: 10px solid white;
+				border-radius: 10px;
+				height: 325px;
+				width: 325px;
+				margin: 20px;
+				overflow: hidden;
+				background-color: white;
+				background-image: url("https://blog.betvictor.com/campaigns/the-art-of-playing-cards/assets/img/og_card_5@2x.png");
+				background-size:100% 100%; 
+			}
+			.image{
+				width:100%;
+				height: 100%;
+				transition: transform 2s;
+			}
+			.image-flip{
+				transform: rotateY(180deg);
+			}
+			#startOver{
+				border: 2px solid;
+				position: absolute;
+				left: 47%;    
+				top: 300px;
+				height: 100px;
+				width: 200px;
+				text-align: center;
+				padding: 35px;
+				background-color: beige;
+				font-size: 20px;
+				display: none;
+			}
+		</style>		
+	</head>
+	<body>
+		<div style="position:relative;">
+			<div id="game">
+				<div class="d-flex flex-wrap">
+					<div class="tile">
+						<img class="image">
+					</div>
+					<div class="tile">
+						<img class="image">
+					</div>
+					<div class="tile">
+						<img class="image">
+					</div>
+					<div class="tile">
+						<img class="image">
+					</div>
+					<div class="tile">
+						<img class="image">
+					</div>
+					<div class="tile">
+						<img class="image">
+					</div>
+					<div class="tile">
+						<img class="image">
+					</div>
+					<div class="tile">
+						<img class="image">
+					</div>
+				</div>
+			</div>
+			<div id="startOver" onclick="startAgain()">
+				New Game
+			</div>
+		</div>
+	</body>
+	<script>
+		var imageUrls = [
+			"https://www.collinsdictionary.com/images/thumb/apple_158989157_250.jpg?version=4.0.200",
+			"https://www.collinsdictionary.com/images/thumb/mango_414745195_250.jpg?version=4.0.200",
+			"https://www.collinsdictionary.com/images/thumb/orange_342874121_250.jpg?version=4.0.200",
+			"https://www.collinsdictionary.com/images/thumb/pineapple_124985672_250.jpg?version=4.0.200"
+		]
+		
+		var images = document.getElementsByClassName('image');
+		var tiles = document.getElementsByClassName('tile');
+		var gameView = document.getElementById('game');
+		var startOver = document.getElementById('startOver');
+		
+		function startAgain(){
+			masterReset();
+			gameView.style.display = "block";
+			startOver.style.display = "none";
+		}
+		masterReset();
+		
+		function masterReset(){
+			
+			var bestOfCount = +prompt("How many rounds do you want to play?");
+			var scores = [];
+			
+			
+			
+			reset();
+			start();
+		
+			function start(){	
+				imageUrls.forEach((url)=>{
+					var imgCount = 0;
+					while(imgCount<2){
+						var rand = Math.floor(Math.random()*images.length);
+						if(images[rand].src===""){					
+							images[rand].src = url;
+							imgCount++;
+						}				
+					}
+				});	
+				
+				for(var j=0;j<=images.length-1;j++){
+					images[j].style.display = "block";
+				}
+					
+				setTimeout(()=>{
+						for(var j=0;j<=images.length-1;j++){
+							images[j].style.display = "none";
+						}
+					},2000);
+				
+				
+				
+				var x = [];
+				for(var i=0;i<=tiles.length-1;i++){
+					tiles[i].onclick = (e)=>{
+						if(e.target.firstElementChild){
+							if(!x.length){
+								e.target.firstElementChild.style.display = 'block';
+								e.target.style.borderColor = '#70e000';
+								let obj = {
+									"src": e.target.firstElementChild.src,
+									"isPaired": false
+								};
+								x.push(obj);
+							}
+							else{
+								e.target.firstElementChild.style.display = "block";
+								let index = x.findIndex((obj)=>{
+									return obj.src===e.target.firstElementChild.src;
+								});						
+								if(index!=-1){
+									e.target.style.borderColor = '#70e000';
+									x[index].isPaired = true;
+									if(x.length===imageUrls.length){
+										var isGameComplete = x.every((image)=>{
+											return image.isPaired===true;
+										});
+										if(isGameComplete){
+											setTimeout(()=>{
+												alert("Congrats! You Won! You have matched all pairs");											
+												scores.push(4);
+												if(scores.length===bestOfCount){
+													let totalScore = scores.reduce((total,score)=>{
+														return total+score;
+													});												
+													alert(`Your total score is ${totalScore}`);
+													let playAgain = window.confirm("Do you want to play again?");
+													if(playAgain){
+														masterReset();
+													}
+													else{
+														gameView.style.display = "none";
+														startOver.style.display = "block";
+													}
+												}
+												else{
+													reset();
+													start();
+												}
+												
+											});
+											
+										}
+									}
+								}						
+								else{								
+									let isNotPaired = x.some((obj)=>{
+										return obj.isPaired===false
+									});	
+									if(isNotPaired){
+										e.target.style.borderColor = '#e63946';
+										setTimeout(()=>{
+											alert("Oops! You lose! Try again.");
+											let pairs = x.filter((card)=>{
+												return card.isPaired===true;
+											})
+											alert(`You have matched ${pairs.length} pair`);
+											scores.push(pairs.length);
+											if(scores.length===bestOfCount){
+													let totalScore = scores.reduce((total,score)=>{
+														return total+score;
+													});												
+													alert(`Your total score is ${totalScore}`);
+													let playAgain = window.confirm("Do you want to play again?");
+													if(playAgain){
+														masterReset();
+													}
+													else{
+														gameView.style.display = "none";
+														startOver.style.display = "block";
+													}
+											}
+											else{
+												reset();
+												start();
+											}
+										});
+										
+									}
+									else{
+										e.target.firstElementChild.style.display = 'block';
+										e.target.style.borderColor = '#70e000';
+										let obj = {
+											"src": e.target.firstElementChild.src,
+											"isPaired": false
+										};
+										x.push(obj);
+									}
+								}
+								
+							}
+						}
+					}
+				}
+			}
+
+			function reset(){
+				for(var o=0;o<=images.length-1;o++){									
+					images[o].removeAttribute('src');
+				}
+				for(var j=0;j<=tiles.length-1;j++){
+					tiles[j].style.borderColor = "white";
+				}
+			}
+		}
+	</script>
+</html>
+
